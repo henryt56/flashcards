@@ -43,10 +43,12 @@ export default function Flashcards() {
   return (
     <Container maxWidth="lg">
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2, mt: 2 }}>
+      <Button color="inherit" onClick={() => router.push('/')}>Home</Button>
         <Button 
           variant="contained" 
           color="primary" 
           onClick={() => router.push('/generate')}
+          sx={{mx:2}}
         >
           Generate Flashcards
         </Button>
