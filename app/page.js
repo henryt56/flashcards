@@ -2,11 +2,9 @@
 import getStripe from "@/utils/get-stripe";
 import { SignedIn, SignedOut } from "@clerk/nextjs";
 import Head from "next/head";
-import { Grid, Container, AppBar, Toolbar, Typography,Button, Userbutton, Box } from "@mui/material";
+import { Grid, Container, AppBar, Toolbar, Typography,Button, Box } from "@mui/material";
 import { UserButton } from "@clerk/nextjs";
-import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 import { motion } from "framer-motion";
 import Link from 'next/link'; 
 

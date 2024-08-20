@@ -8,55 +8,44 @@ import {doc, collection, setDoc, getDoc, writeBatch } from 'firebase/firestore'
 
 export default function Generate(){
   const { isLoaded, isSignedIn, user } = useUser();
-  const [generationAttempts, setGenerationAttempts] = useState(0);
-  const [subscriptionDialogOpen, setSubscriptionDialogOpen] = useState(false);
+  const [subscription, setSubscription] = useState(null);
   const router = useRouter();
   const [flashcards, setFlashcards] = useState([])
   const [flipped, setFlipped] = useState([])
   const [text, setText] = useState('')
   const [name, setName] = useState('')
   const [open, setOpen] = useState(false)
-  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (user) {
-        const userDocRef = doc(collection(db, 'users'), user.id);
-        getDoc(userDocRef).then((docSnap) => {
-            if (docSnap.exists()) {
-                const userData = docSnap.data();
-                setGenerationAttempts(userData.generationAttempts || 0);
-            }
-        });
+    if (isLoaded && !isSignedIn) {
+      router.push('/sign-in');
+    } else if (isLoaded && isSignedIn) {
+      fetchUserSubscription();
     }
-}, [user]);
+  }, [isLoaded, isSignedIn]);
 
-const handleSubmit = async () => {
-    if (generationAttempts >= 1) {
-        setSubscriptionDialogOpen(true); // Show subscription message if user has generated once
-        return;
+  const fetchUserSubscription = async () => {
+    const userDocRef = doc(db, 'users', user.id);
+    const docSnap = await getDoc(userDocRef);
+
+    if (docSnap.exists()) {
+      setSubscription(docSnap.data().subscription);
     }
+  };
 
-    setLoading(true); // Start loading
-
-    try {
-        const res = await fetch('api/generate', {
-            method: 'POST',
-            body: text,
-        });
-        const data = await res.json();
-        setFlashcards(data);
-
-        // Increment generation attempts and save to Firestore
-        const newAttempts = generationAttempts + 1;
-        const userDocRef = doc(collection(db, 'users'), user.id);
-        await setDoc(userDocRef, { generationAttempts: newAttempts }, { merge: true });
-        setGenerationAttempts(newAttempts);
-    } catch (error) {
-        console.error('Error generating flashcards:', error);
-    } finally {
-        setLoading(false); // End loading
+  const handleSubmit = async ()=> {
+    if (subscription !== 'pro' && flashcards.length >= 50) {
+      alert('You have reached the limit for the Basic plan. Please upgrade to Pro for unlimited flashcards.');
+      return;
     }
-};
+    fetch('api/generate', {
+      method:'POST',
+      body: text,
+    })
+      .then((res) => res.json())
+      .then((data) => setFlashcards(data))
+  }
+
   const handleCardClick = (id) => {
     setFlipped ((prev) => ({
       ...prev,
